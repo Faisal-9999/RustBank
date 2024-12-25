@@ -1,3 +1,9 @@
+mod customer;
+
+use crate::customer::Customer;
+
 fn main() {
-    println!("Hello, world!");
+    let human = Customer::new();
+
+    print!("name: {}", human.name);
 }

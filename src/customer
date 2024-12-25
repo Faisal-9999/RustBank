@@ -1,0 +1,13 @@
+mod account;
+
+use crate::account::Account;
+
+pub struct Customer {
+    name: String,
+    accounts : Vec<Account>,
+}
+
+impl Customer {
+
+
+}
