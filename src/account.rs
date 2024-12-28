@@ -4,6 +4,22 @@ pub struct Account {
     balance : i32,
 }
 
+impl Clone for Account {
+    fn clone(&self) -> Account {
+        Account {
+            name : self.name.clone(),
+            password : self.password.clone(),
+            balance : self.balance,
+        }
+    }
+}
+
+impl ToString for Account {
+    fn to_string(&self) -> String {
+        format!("{},{},{}", self.name, self.password, self.balance)
+    }
+}
+
 impl Account {
     pub fn new(name : String, password : String, balance : i32) -> Account {
         Account {
@@ -37,6 +53,12 @@ impl Account {
         self.balance -= amount;
 
         println!("Current Balance: {}", self.balance);
+    }
+
+    pub fn view_account_details(&self) {
+        println!(
+            "NAME: {}\nPASSWORD: {}\nBALANCE: {}", self.name, self.password, self.balance
+        )
     }
 
     pub fn get_name(&self) -> String {

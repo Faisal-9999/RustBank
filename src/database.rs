@@ -1,13 +1,14 @@
 use crate::account::Account;
 
 use std::fs::File;
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::path::Path;
 use std::io::{self, BufRead};
 
 pub struct Database {
-    accounts : Vec<Account>
+    accounts : Vec<Account>,
 }
-
 
 impl Database {
 
@@ -83,26 +84,51 @@ impl Database {
         99999999999999999
     }
 
-    //IGNORE EVERYTHING ELSE YOU FIXED THE DATABASE PROBLEM BY MAKING THE DATABASE A VECTOR THAT INITIALIZES BY LOADING ONCE FROM THE FILE
-    //YOU ARE MAKING THE SEARCH FUNCTION FOR BOTH UNIVERSAL CHECKS OF LOGIN AND SIGNUP
-    //IN LOGIN YOU WILL USE IT TO CHECK IF THE DATA EXISTS AND FOR SIGNUP YOU CAN MAKE SURE THE DATA ISNT ALREADY TAKEN
-    //THE LOAD FUNCTION WILL LOAD AN ACCOUNT AFTER THE CHECK FOR SEARCH IS DONE AND IS SUCCESSFUL SO YES THE SEARCH FUNCTION WILL ALSO BE USED IN THE FUNCTION BELOW
-    //AND THE SEARCH FUNCTION CAN ALSO BE USED FOR WHEN THE USER IS SIGNING UP
-
     pub fn load(&self, name : &str, password : &str) -> Result<Account, String> {
 
+        let check: usize = self.search(name, password);
+    
+        if check == 99999999999999999 {
+            return Err("Error: Can't Load... Account Data Doesn't Exist".to_string());
+        }
+
+        Ok(self.accounts[check].clone())
     }
 
-    //this is basically the signup function this will also use the search function before hand the check
-    // if user data already exists if it does just stop them from making another account
-    pub fn create_account(&self, name : &str, password : &str) -> Result<Account, String> {
+    pub fn create_account(&mut self, name : &str, password : &str) -> Result<Account, String> {
+        if self.search(name, password) !=  99999999999999999 {
+            return Err("Data already exists".to_string());
+        }
 
+        if name.is_empty() {
+            return Err("Name is empty".to_string());
+        }
+
+        if password.is_empty() {
+            return Err("Password is empty".to_string());
+        }   
+
+        if password.len() < 8 {
+            return Err("Password length can't be less than 8".to_string());
+        }
+
+        self.accounts.push(Account::new(name.to_string(), password.to_string(), 0));
+
+        Ok(Account::new(name.to_string(), password.to_string(), 0))
     }
 
-    //this function will be called at the end to make sure once the program has ended and the user has decided to exit we save
-    //the database struct contents into the file
-    pub fn deinit(&self, file_name : &str) {
+    pub fn deinit(&self, file_name : &str) -> Result<(), io::Error>{
+        let mut file = OpenOptions::new().write(true).truncate(true).open(file_name)?;
 
+        let accounts_holder = &self.accounts;
+
+        for account  in accounts_holder {
+            writeln!(file, "{}", account.to_string())?;
+        }
+
+        println!("Database Saved Successfully");
+
+        Ok(())
     }
 
 }
