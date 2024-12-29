@@ -16,7 +16,7 @@ impl Clone for Account {
 
 impl ToString for Account {
     fn to_string(&self) -> String {
-        format!("{},{},{}", self.name, self.password, self.balance)
+        format!("{},{},{}", self.name.trim(), self.password.trim(), self.balance)
     }
 }
 
@@ -71,5 +71,9 @@ impl Account {
 
     pub fn get_balance(&self) -> i32 {
         self.balance
+    }
+
+    pub fn set_balance(&mut self, amount : i32) {
+        self.balance = amount
     }
 }

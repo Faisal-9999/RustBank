@@ -23,7 +23,7 @@ impl Database {
             println!("Successfully Created Database File");
         }
 
-        let mut file = match File::open(file_name) {
+        let file = match File::open(file_name) {
             Ok(file) => file,
             Err(e) => {
                 return Err(format!("Error: {}", e));
@@ -34,40 +34,18 @@ impl Database {
 
         for line in reader.lines() { 
 
-            let mut user_name = String::new();
-            let mut user_password = String::new();
-            let mut user_balance = String::new();
-
             let line = line.map_err(|e| format!("Error: {}", e))?;
 
-            
-            let mut counter = 1;
+            let mut parts = line.splitn(3, ',');
 
-            for i in line.chars() {
-                
-                if i == ','  {
-                    counter += 1;
-                }
 
-                if counter == 1 {
-                    user_name.push(i);
-                }
-                else if counter == 2 {
-                    user_password.push(i);
-                }
-                else {
-                    user_balance.push(i);
-                }
+            let user_name = parts.next().unwrap_or_default().to_string();
+            let user_password = parts.next().unwrap_or_default().to_string();
+            let user_balance = parts.next().unwrap_or_default().trim();
 
-                let user_balance : i32 =  match user_balance.trim().parse() {
-                    Ok(value) => value,
-                    Err(e) => {
-                        panic!("Error: {}", e);
-                    }
-                };
+            let user_balance : i32 = user_balance.parse().map_err(|e| format!("Error: {}", e))?;
 
-                accounts.push(Account::new(user_name.clone(), user_password.clone(), user_balance.clone()));
-            }
+            accounts.push(Account::new(user_name, user_password, user_balance))
         }
 
         Ok(Database{accounts})
@@ -76,7 +54,7 @@ impl Database {
 
     pub fn search(&self, name : &str, password : &str) -> usize {
         for i in 0..self.accounts.len() {
-            if self.accounts[i].get_name().as_str() == name && password == self.accounts[i].get_password().as_str() {
+            if self.accounts[i].get_name().trim() == name && password == self.accounts[i].get_password().trim() {
                 return i;
             }
         }
@@ -129,6 +107,14 @@ impl Database {
         println!("Database Saved Successfully");
 
         Ok(())
+    }
+
+    pub fn check_for_edit(&mut self, account : Account) {
+        for data in &mut self.accounts {
+            if account.get_name() == data.get_name() && account.get_password() == data.get_password() {
+                data.set_balance(account.get_balance());
+            }
+        }
     }
 
 }
